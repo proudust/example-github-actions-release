@@ -1,7 +1,9 @@
-name: 2. 更にビルドの成果物を添付する
+name: 3. ブランチの push の時はビルドだけする
 
 on:
   push:
+    branches:
+      - "*"
     tags:
       - "*"
 
@@ -17,28 +19,28 @@ jobs:
           touch artifact
           zip artifact.zip artifact
 
+      # タグが push された場合のみ実行される
       - uses: actions/create-release@master
-        id: create_release # ファイルアップロードに outputs の値を使用するため ID が必要
+        id: create_release
+        if: startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: 2. 更にビルドの成果物を添付する
+          release_name: 3. ブランチの push の時はビルドだけする
           body: |
             リリースの作成テストです。
             下書きかつプレリリースの状態で作成されます。
           draft: true
           prerelease: true
 
+      # タグが push された場合のみ実行される
       - uses: actions/upload-release-asset@master
+        if: startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # リリースのアップロード URL (必須)
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          # 添付ファイルのパス (必須)
           asset_path: ./artifact.zip
-          # 添付ファイルの表示名 (必須)
           asset_name: artifact.zip
-          # 添付ファイルに対応する content-type (必須)
           asset_content_type: application/zip
