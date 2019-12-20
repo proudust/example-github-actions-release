@@ -1,4 +1,4 @@
-name: 1. タグを push したら自動でリリースの下書きを作成する
+name: 2. 更にビルドの成果物を添付する
 
 on:
   push:
@@ -12,19 +12,33 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
+      # ビルド処理に置き換える
+      - run: |
+          touch artifact
+          zip artifact.zip artifact
+
       - uses: actions/create-release@master
+        id: create_release # ファイルアップロードに outputs の値を使用するため ID が必要
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # リリースのタグ (必須)
           tag_name: ${{ github.ref }}
-          # リリースのタイトル (必須)
-          release_name: 1. タグを push したら自動でリリースの下書きを作成する
-          # リリースのタイトル (省略可能)
+          release_name: 2. 更にビルドの成果物を添付する
           body: |
             リリースの作成テストです。
             下書きかつプレリリースの状態で作成されます。
-          # 下書き状態で作成する場合は true (省略時 false)
           draft: true
-          # プレリリース表示を付ける場合は true (省略時 false)
           prerelease: true
+
+      - uses: actions/upload-release-asset@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # リリースのアップロード URL (必須)
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          # 添付ファイルのパス (必須)
+          asset_path: ./artifact.zip
+          # 添付ファイルの表示名 (必須)
+          asset_name: artifact.zip
+          # 添付ファイルに対応する content-type (必須)
+          asset_content_type: application/zip
