@@ -1,4 +1,4 @@
-name: 3. ブランチの push の時はビルドだけする
+name: 4. ブランチの push の時の成果物をダウンロード可能にする
 
 on:
   push:
@@ -19,7 +19,16 @@ jobs:
           touch artifact
           zip artifact.zip artifact
 
-      # タグが push された場合のみ実行される
+      - name: Upload build artifact
+        # タグ以外が push された場合のみ実行される
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        uses: actions/upload-artifact@v1
+        with:
+          # 表示名 (必須)
+          name: artifact.zip
+          # アップロードするファイルまたはディレクトリ (必須)
+          path: ./artifact
+
       - uses: actions/create-release@master
         id: create_release
         if: startsWith(github.ref, 'refs/tags/')
@@ -27,14 +36,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: 3. ブランチの push の時はビルドだけする
+          release_name: 4. ブランチの push の時の成果物をダウンロード可能にする
           body: |
             リリースの作成テストです。
             下書きかつプレリリースの状態で作成されます。
           draft: true
           prerelease: true
 
-      # タグが push された場合のみ実行される
       - uses: actions/upload-release-asset@master
         if: startsWith(github.ref, 'refs/tags/')
         env:
