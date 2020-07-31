@@ -16,6 +16,10 @@ jobs:
           touch artifact
           zip artifact.zip artifact
 
+      - run: echo "$GITHUB_EVENT"
+        env:
+          GITHUB_EVENT: ${{ toJson(github.event) }}
+
       - uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
